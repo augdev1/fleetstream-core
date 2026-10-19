@@ -1,0 +1,18 @@
+{
+  "inbox_dir": "./inbox",
+  "devices_dir": "./devices",
+  "device_ids": [
+    "iphone_01",
+    "iphone_02",
+    "iphone_03",
+    "iphone_04"
+  ],
+  "supported_extensions": [
+    ".mp4",
+    ".mov",
+    ".mkv",
+    ".m4v"
+  ],
+  "file_settle_timeout_seconds": 60.0,
+  "poll_interval_seconds": 0.5
+}
