@@ -29,7 +29,7 @@ if exist "%~dp0.venv\Scripts\python.exe" (
     )
 )
 
-%PYTHON_CMD% watcher.py
+"%PYTHON_CMD%" watcher.py
 
 if %errorlevel% neq 0 (
     echo.

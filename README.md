@@ -40,6 +40,7 @@ Any video dropped into the `inbox` directory will be automatically stabilized, d
 fleetstream-core/
 |-- INSTALL.bat                 # Windows dependency installation script
 |-- START_FLEETSTREAM.bat       # Windows one-click watcher launcher
+|-- RUN_DEMO.bat               # Windows one-click simulation test
 |-- config.json                 # Path and device configuration file
 |-- requirements.txt            # Minimal runtime and testing dependencies
 |-- pyproject.toml              # Build metadata and tool configuration
