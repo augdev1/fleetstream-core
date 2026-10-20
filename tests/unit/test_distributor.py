@@ -51,3 +51,34 @@ def test_distributor_no_active_devices_raises() -> None:
 
     with pytest.raises(DeviceTargetUnavailableError):
         distributor.select_next_device()
+
+
+@pytest.mark.unit
+def test_broadcast_distributor_dispatches_to_all_devices(tmp_path: Path) -> None:
+    """Verify BroadcastDistributor copies video to all active devices and removes source."""
+    from core.distributor import BroadcastDistributor
+
+    inbox = tmp_path / "inbox"
+    inbox.mkdir()
+    video = inbox / "sample.mp4"
+    video.write_bytes(b"\x00" * 128)
+
+    dev1 = tmp_path / "devices" / "iphone_01"
+    dev2 = tmp_path / "devices" / "iphone_02"
+    dev1.mkdir(parents=True)
+    dev2.mkdir(parents=True)
+
+    devices = [
+        Device(device_id="iphone_01", path=dev1, is_active=True),
+        Device(device_id="iphone_02", path=dev2, is_active=True),
+    ]
+
+    distributor = BroadcastDistributor(devices)
+    jobs = distributor.dispatch(video)
+
+    assert len(jobs) == 2
+    assert (dev1 / "sample.mp4").exists()
+    assert (dev1 / "sample.json").exists()
+    assert (dev2 / "sample.mp4").exists()
+    assert (dev2 / "sample.json").exists()
+    assert not video.exists()  # Removed from inbox after broadcast

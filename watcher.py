@@ -213,13 +213,22 @@ class InboxWatcherHandler(FileSystemEventHandler):
             meta_name = job.target_metadata_path.name if job.target_metadata_path else ".json"
 
             # Log: Device destination
-            log_event(
-                f"Routed successfully: [bold]{job.source_path.name}[/bold] -> "
-                f"[bold cyan]{target_device}[/bold cyan] "
-                f"[dim](Sidecar generated: {meta_name})[/dim]",
-                style="bold magenta",
-                tag="ROUTED",
-            )
+            if getattr(self.engine, "mode", "round_robin") == "broadcast":
+                log_event(
+                    f"Broadcast successfully: [bold]{job.source_path.name}[/bold] -> "
+                    f"[bold cyan]all {len(self.engine.device_paths)} devices[/bold cyan] "
+                    f"[dim](Sidecars generated in all folders)[/dim]",
+                    style="bold magenta",
+                    tag="BROADCAST",
+                )
+            else:
+                log_event(
+                    f"Routed successfully: [bold]{job.source_path.name}[/bold] -> "
+                    f"[bold cyan]{target_device}[/bold cyan] "
+                    f"[dim](Sidecar generated: {meta_name})[/dim]",
+                    style="bold magenta",
+                    tag="ROUTED",
+                )
 
         except Exception as exc:
             logger.error("Error distributing file %s: %s", file_path.name, exc, exc_info=True)
@@ -281,6 +290,7 @@ class FleetStreamWatcher:
         settle_interval: float = 0.5,
         default_hashtags: list[str] | None = None,
         default_captions: list[str] | None = None,
+        mode: str = "round_robin",
     ) -> None:
         self.inbox_dir = Path(inbox_dir)
         self.devices_dir = Path(devices_dir)
@@ -300,6 +310,7 @@ class FleetStreamWatcher:
             device_paths=device_paths,
             allowed_extensions=VALID_VIDEO_EXTENSIONS,
             metadata_generator=metadata_gen,
+            mode=mode,
         )
 
         self.handler = InboxWatcherHandler(
@@ -324,7 +335,7 @@ class FleetStreamWatcher:
         self.handler.shutdown()
 
 
-def print_banner(inbox_dir: Path, devices_dir: Path) -> None:
+def print_banner(inbox_dir: Path, devices_dir: Path, mode: str = "broadcast") -> None:
     """Display startup information banner."""
     devices: list[str] = []
     if devices_dir.exists():
@@ -337,14 +348,20 @@ def print_banner(inbox_dir: Path, devices_dir: Path) -> None:
             "iphone_04",
         ]
 
+    mode_title = (
+        "Broadcast (Mirror all videos to all iPhones)"
+        if mode == "broadcast"
+        else "Round-Robin (Divide videos evenly across iPhones)"
+    )
+
     if RICH_AVAILABLE and console:
         banner = (
             f"[bold cyan]FleetStream Continuous Watcher[/bold cyan]\n"
             f"[dim]Active Video Ingestion and Fleet Orchestrator[/dim]\n\n"
             f"[bold]Inbox Folder:[/bold] [yellow]{inbox_dir.resolve()}[/yellow]\n"
             f"[bold]Devices ({len(devices)}):[/bold] [green]{', '.join(devices)}[/green]\n"
+            f"[bold]Mode:[/bold] [bold magenta]{mode_title}[/bold magenta]\n"
             f"[bold]Accepted Extensions:[/bold] {', '.join(sorted(VALID_VIDEO_EXTENSIONS))}\n\n"
-            f"[dim]Tip: For balanced delivery across {len(devices)} iPhones, drop files in multiples of {len(devices)} (e.g. {len(devices)}, {len(devices)*2}, {len(devices)*3}).[/dim]\n\n"
             f"[dim italic]Press Ctrl+C to terminate the service at any time.[/dim italic]"
         )
         console.print(Panel(banner, border_style="cyan", box=box.ROUNDED))
@@ -353,7 +370,7 @@ def print_banner(inbox_dir: Path, devices_dir: Path) -> None:
         print("FleetStream Continuous Watcher - Active Daemon")
         print(f"Inbox: {inbox_dir}")
         print(f"Devices: {', '.join(devices)}")
-        print(f"Tip: Drop files in multiples of {len(devices)} for equal distribution.")
+        print(f"Mode: {mode_title}")
         print("=" * 60)
 
 
@@ -424,7 +441,7 @@ def main() -> None:
     settle_timeout = args.settle_timeout or settings.file_settle_timeout_seconds
     settle_interval = args.settle_interval or settings.poll_interval_seconds
 
-    print_banner(inbox_dir, devices_dir)
+    print_banner(inbox_dir, devices_dir, mode=settings.mode)
 
     watcher_service = FleetStreamWatcher(
         inbox_dir=inbox_dir,
@@ -433,6 +450,7 @@ def main() -> None:
         settle_interval=settle_interval,
         default_hashtags=settings.default_hashtags,
         default_captions=settings.default_captions,
+        mode=settings.mode,
     )
 
     watcher_service.start(scan_existing=True)

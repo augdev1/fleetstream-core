@@ -24,6 +24,12 @@ class Settings(BaseSettings):
         description="Directory where corrupt or unprocessable files are isolated",
     )
 
+    # Distribution Mode: 'broadcast' (replicate to all devices) or 'round_robin' (divide evenly)
+    mode: str = Field(
+        default="broadcast",
+        description="Distribution mode: 'broadcast' (all devices) or 'round_robin' (divide evenly)",
+    )
+
     # Device identifiers for the iPhone fleet (managed via Tame.so)
     device_ids: list[str] = Field(
         default=["iphone_01", "iphone_02", "iphone_03", "iphone_04"],

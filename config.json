@@ -1,4 +1,5 @@
 {
+  "mode": "broadcast",
   "inbox_dir": "./inbox",
   "devices_dir": "./devices",
   "device_ids": [

@@ -80,6 +80,52 @@ class RoundRobinDistributor:
             raise DistributionError(f"I/O error moving {video_path} to {device.device_id}: {exc}") from exc
 
 
+class BroadcastDistributor:
+    """Distributor that replicates each incoming video to all active devices."""
+
+    def __init__(self, devices: Sequence[Device]) -> None:
+        self.devices: list[Device] = list(devices)
+        self.metadata_generator: MetadataGenerator = MetadataGenerator()
+
+    @property
+    def active_devices(self) -> list[Device]:
+        """Devices that are operational and ready to accept media."""
+        return [d for d in self.devices if d.is_active]
+
+    def dispatch(self, video_path: Path) -> list[IngestJob]:
+        """Atomically dispatch a video file copy to all active devices."""
+        if not video_path.exists():
+            raise FileNotFoundError(f"Source file not found: {video_path}")
+
+        active = self.active_devices
+        if not active:
+            raise DeviceTargetUnavailableError("No active devices available for broadcast.")
+
+        jobs: list[IngestJob] = []
+        for device in active:
+            device.path.mkdir(parents=True, exist_ok=True)
+            target_video_path = device.path / video_path.name
+            shutil.copy2(str(video_path), str(target_video_path))
+            meta = self.metadata_generator.generate(
+                video_path=target_video_path,
+                target_device=device,
+                original_filename=video_path.name,
+            )
+            meta_path = self.metadata_generator.write_sidecar(meta, target_video_path.with_suffix(".json"))
+            jobs.append(
+                IngestJob(
+                    source_path=video_path,
+                    target_device=device,
+                    target_video_path=target_video_path,
+                    target_metadata_path=meta_path,
+                    status=DistributionStatus.DISTRIBUTED,
+                )
+            )
+
+        video_path.unlink()
+        return jobs
+
+
 class DistributionEngine:
     """Core distribution and orchestration engine for iPhone fleets."""
 
@@ -90,9 +136,11 @@ class DistributionEngine:
         device_paths: list[Path] | None = None,
         allowed_extensions: set[str] | None = None,
         metadata_generator: MetadataGenerator | None = None,
+        mode: str = "round_robin",
     ) -> None:
         """Initialize engine with inbox folder, target device roots, and allowed formats."""
         self.inbox_dir: Path = Path(inbox_dir)
+        self.mode: str = mode.lower()
         self.allowed_extensions: set[str] = {
             ext.lower()
             for ext in (
@@ -141,18 +189,54 @@ class DistributionEngine:
         return device
 
     def distribute_file(self, file_path: Path) -> IngestJob:
-        """Atomically distribute a single file to the next iPhone in rotation."""
+        """Distribute a single file according to configured mode (broadcast or round_robin)."""
         if not file_path.exists():
             raise FileNotFoundError(f"Source file does not exist: {file_path}")
 
+        if not self.device_paths:
+            raise DeviceTargetUnavailableError("No devices available in distribution engine.")
+
+        if self.mode == "broadcast":
+            last_dest_video: Path | None = None
+            last_meta_path: Path | None = None
+
+            for target_dev in self.device_paths:
+                target_dev.mkdir(parents=True, exist_ok=True)
+                dest_video = target_dev / file_path.name
+                shutil.copy2(str(file_path), str(dest_video))
+                last_dest_video = dest_video
+
+                metadata = self.metadata_generator.generate(
+                    video_path=dest_video,
+                    target_device=target_dev.name,
+                    original_filename=file_path.name,
+                )
+                last_meta_path = self.metadata_generator.write_sidecar(
+                    metadata=metadata,
+                    destination_path=dest_video.with_suffix(".json"),
+                )
+
+            # Once replicated to all devices, remove source file from inbox
+            try:
+                file_path.unlink()
+            except OSError as exc:
+                logger.warning("Could not delete %s from inbox: %s", file_path, exc)
+
+            return IngestJob(
+                source_path=file_path,
+                target_device=Device(device_id="all_devices", path=self.device_paths[0].parent),
+                target_video_path=last_dest_video or file_path,
+                target_metadata_path=last_meta_path,
+                status=DistributionStatus.DISTRIBUTED,
+            )
+
+        # Round-Robin distribution
         target_dev = self.get_next_device()
         target_dev.mkdir(parents=True, exist_ok=True)
         dest_video = target_dev / file_path.name
 
-        # Physical file transfer via shutil.move
         shutil.move(str(file_path), str(dest_video))
 
-        # Generate and persist paired JSON sidecar
         metadata = self.metadata_generator.generate(
             video_path=dest_video,
             target_device=target_dev.name,
