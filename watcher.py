@@ -317,12 +317,16 @@ class FleetStreamWatcher:
 
 def print_banner(inbox_dir: Path, devices_dir: Path) -> None:
     """Display startup information banner."""
-    devices = [d.name for d in sorted(devices_dir.iterdir()) if d.is_dir()] or [
-        "iphone_01",
-        "iphone_02",
-        "iphone_03",
-        "iphone_04",
-    ]
+    devices: list[str] = []
+    if devices_dir.exists():
+        devices = [d.name for d in sorted(devices_dir.iterdir()) if d.is_dir()]
+    if not devices:
+        devices = [
+            "iphone_01",
+            "iphone_02",
+            "iphone_03",
+            "iphone_04",
+        ]
 
     if RICH_AVAILABLE and console:
         banner = (
@@ -393,6 +397,18 @@ def main() -> None:
     else:
         inbox_dir = args.inbox or settings.inbox_dir
         devices_dir = args.devices or settings.devices_dir
+
+    if not inbox_dir.is_absolute():
+        inbox_dir = (PROJECT_ROOT / inbox_dir).resolve()
+    if not devices_dir.is_absolute():
+        devices_dir = (PROJECT_ROOT / devices_dir).resolve()
+
+    inbox_dir.mkdir(parents=True, exist_ok=True)
+    devices_dir.mkdir(parents=True, exist_ok=True)
+
+    device_ids = settings.device_ids or ["iphone_01", "iphone_02", "iphone_03", "iphone_04"]
+    for dev_id in device_ids:
+        (devices_dir / dev_id).mkdir(parents=True, exist_ok=True)
 
     settle_timeout = args.settle_timeout or settings.file_settle_timeout_seconds
     settle_interval = args.settle_interval or settings.poll_interval_seconds

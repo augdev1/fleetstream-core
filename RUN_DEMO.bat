@@ -1,5 +1,6 @@
 @echo off
 setlocal
+cd /d "%~dp0"
 title FleetStream - Simulation Demo
 
 echo ========================================================
