@@ -61,7 +61,20 @@ if defined UV_EXEC (
     if !errorlevel! equ 0 goto :SUCCESS
 )
 
-:: 4. Fallback: prompt user to install Python
+:: 4. Attempt automated 1-click bootstrap (zero manual Python setup required)
+echo [INFO] Python not found on system PATH.
+echo [INFO] Attempting automated 1-click setup...
+powershell -ExecutionPolicy Bypass -Command "irm https://astral.sh/uv/install.ps1 | iex" >nul 2>&1
+if exist "%USERPROFILE%\.local\bin\uv.exe" (
+    set "UV_EXEC=%USERPROFILE%\.local\bin\uv.exe"
+    echo [INFO] Automated bootstrapper configured.
+    echo [INFO] Provisioning isolated Python environment and dependencies...
+    "!UV_EXEC!" venv "%VENV_DIR%"
+    "!UV_EXEC!" pip install -r "%SCRIPT_DIR%requirements.txt" --python "%VENV_PY%"
+    if !errorlevel! equ 0 goto :SUCCESS
+)
+
+:: 5. Fallback: prompt user to install Python
 echo [ERROR] Python 3.11+ was not found on your system.
 echo.
 echo Please install Python using the official installer:
