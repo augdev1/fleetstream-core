@@ -89,6 +89,7 @@ class DistributionEngine:
         devices_dir: Path | None = None,
         device_paths: list[Path] | None = None,
         allowed_extensions: set[str] | None = None,
+        metadata_generator: MetadataGenerator | None = None,
     ) -> None:
         """Initialize engine with inbox folder, target device roots, and allowed formats."""
         self.inbox_dir: Path = Path(inbox_dir)
@@ -122,7 +123,9 @@ class DistributionEngine:
             self.device_paths = []
 
         self._current_index: int = 0
-        self.metadata_generator: MetadataGenerator = MetadataGenerator()
+        self.metadata_generator: MetadataGenerator = (
+            metadata_generator if metadata_generator is not None else MetadataGenerator()
+        )
 
     def get_devices(self) -> list[Path]:
         """Return list of managed device directory paths."""

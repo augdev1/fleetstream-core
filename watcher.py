@@ -279,6 +279,8 @@ class FleetStreamWatcher:
         device_paths: list[Path] | None = None,
         settle_timeout: float = 60.0,
         settle_interval: float = 0.5,
+        default_hashtags: list[str] | None = None,
+        default_captions: list[str] | None = None,
     ) -> None:
         self.inbox_dir = Path(inbox_dir)
         self.devices_dir = Path(devices_dir)
@@ -286,11 +288,18 @@ class FleetStreamWatcher:
         self.inbox_dir.mkdir(parents=True, exist_ok=True)
         self.devices_dir.mkdir(parents=True, exist_ok=True)
 
+        from core.metadata import MetadataGenerator
+        metadata_gen = MetadataGenerator(
+            default_hashtags=default_hashtags,
+            default_captions=default_captions,
+        )
+
         self.engine = DistributionEngine(
             inbox_dir=self.inbox_dir,
             devices_dir=self.devices_dir,
             device_paths=device_paths,
             allowed_extensions=VALID_VIDEO_EXTENSIONS,
+            metadata_generator=metadata_gen,
         )
 
         self.handler = InboxWatcherHandler(
@@ -335,6 +344,7 @@ def print_banner(inbox_dir: Path, devices_dir: Path) -> None:
             f"[bold]Inbox Folder:[/bold] [yellow]{inbox_dir.resolve()}[/yellow]\n"
             f"[bold]Devices ({len(devices)}):[/bold] [green]{', '.join(devices)}[/green]\n"
             f"[bold]Accepted Extensions:[/bold] {', '.join(sorted(VALID_VIDEO_EXTENSIONS))}\n\n"
+            f"[dim]Tip: For balanced delivery across {len(devices)} iPhones, drop files in multiples of {len(devices)} (e.g. {len(devices)}, {len(devices)*2}, {len(devices)*3}).[/dim]\n\n"
             f"[dim italic]Press Ctrl+C to terminate the service at any time.[/dim italic]"
         )
         console.print(Panel(banner, border_style="cyan", box=box.ROUNDED))
@@ -343,6 +353,7 @@ def print_banner(inbox_dir: Path, devices_dir: Path) -> None:
         print("FleetStream Continuous Watcher - Active Daemon")
         print(f"Inbox: {inbox_dir}")
         print(f"Devices: {', '.join(devices)}")
+        print(f"Tip: Drop files in multiples of {len(devices)} for equal distribution.")
         print("=" * 60)
 
 
@@ -420,6 +431,8 @@ def main() -> None:
         devices_dir=devices_dir,
         settle_timeout=settle_timeout,
         settle_interval=settle_interval,
+        default_hashtags=settings.default_hashtags,
+        default_captions=settings.default_captions,
     )
 
     watcher_service.start(scan_existing=True)

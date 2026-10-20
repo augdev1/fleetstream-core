@@ -46,6 +46,22 @@ class Settings(BaseSettings):
         description="Interval in seconds between file stability checks",
     )
 
+    # Metadata defaults
+    default_hashtags: list[str] = Field(
+        default=["#viral", "#fyp", "#trending", "#reels", "#explore"],
+        description="Default hashtags attached to generated metadata sidecars",
+    )
+    default_captions: list[str] = Field(
+        default=[
+            "New exclusive drop. Link in bio.",
+            "Wait until the end. You will not believe this.",
+            "Daily viral clip. Follow for more.",
+            "Trending now. Check out the latest release.",
+            "Behind the scenes footage. Link in bio.",
+        ],
+        description="Rotating pool of viral captions",
+    )
+
     @classmethod
     def load(cls, config_path: Path | None = None) -> "Settings":
         """Load configuration from config.json if present, falling back to defaults/env."""

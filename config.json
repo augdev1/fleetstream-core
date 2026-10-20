@@ -7,6 +7,20 @@
     "iphone_03",
     "iphone_04"
   ],
+  "default_hashtags": [
+    "#viral",
+    "#fyp",
+    "#trending",
+    "#reels",
+    "#explore"
+  ],
+  "default_captions": [
+    "New exclusive drop. Link in bio.",
+    "Wait until the end. You will not believe this.",
+    "Daily viral clip. Follow for more.",
+    "Trending now. Check out the latest release.",
+    "Behind the scenes footage. Link in bio."
+  ],
   "supported_extensions": [
     ".mp4",
     ".mov",

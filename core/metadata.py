@@ -58,15 +58,24 @@ class MetadataGeneratorProtocol(Protocol):
 class MetadataGenerator:
     """Standard generator for paired .json sidecars containing captions, tags, and status."""
 
-    def __init__(self, default_hashtags: list[str] | None = None) -> None:
+    def __init__(
+        self,
+        default_hashtags: list[str] | None = None,
+        default_captions: list[str] | None = None,
+    ) -> None:
         self.default_hashtags: list[str] = (
             list(default_hashtags) if default_hashtags is not None else list(DEFAULT_HASHTAGS)
+        )
+        self.default_captions: list[str] = (
+            list(default_captions) if default_captions is not None else list(DEFAULT_VIRAL_CAPTIONS)
         )
         self._caption_index: int = 0
 
     def get_suggested_caption(self, video_stem: str) -> str:
         """Return a viral English caption."""
-        caption = DEFAULT_VIRAL_CAPTIONS[self._caption_index % len(DEFAULT_VIRAL_CAPTIONS)]
+        if not self.default_captions:
+            return "Trending video. Link in bio."
+        caption = self.default_captions[self._caption_index % len(self.default_captions)]
         self._caption_index += 1
         return caption
 
