@@ -16,18 +16,19 @@ FleetStream eliminates media orchestration bottlenecks in automated multi-phone 
 
 ---
 
-## Quick Setup Guide (Windows)
+## Quick Setup Guide (Windows & macOS)
 
-No programming knowledge or command-line typing is required. The entire workflow operates through Windows Explorer and one-click batch scripts.
+No programming knowledge or command-line typing is required.
 
 ### Step 1: Unpack
 1. Download **`fleetstream-core.zip`** using the download link above.
-2. Extract the folder anywhere on your computer (for example, `C:\FleetStream` or `D:\FleetStream`).
+2. Extract the folder anywhere on your computer (for example, `~/FleetStream` or `C:\FleetStream`).
 
-### Step 2: Run Installer (`INSTALL.bat`)
-1. Open the extracted folder and double-click **`INSTALL.bat`**.
-2. **Automatic Python Setup:** Python is bundled and configured automatically. You do not need to install Python manually.
-3. Once finished, the terminal will display `[SUCCESS] FleetStream environment ready!`. Press any key to close the window.
+### Step 2: Run Installer
+- **Windows:** Double-click **`INSTALL.bat`**.
+- **macOS:** Double-click **`INSTALL.command`**.
+- **Automatic Python Setup:** Python and dependencies are configured automatically. You do not need to install Python manually.
+- Once finished, the terminal displays `[SUCCESS] FleetStream environment ready!`. Press any key to close the window.
 
 ### Step 3: Configure Settings (`config.json`)
 Open **`config.json`** using Notepad to customize your setup if needed:
