@@ -74,3 +74,4 @@ Thumbs.db
 *.mov
 *.avi
 *.mkv
+/tools/

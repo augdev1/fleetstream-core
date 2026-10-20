@@ -40,13 +40,17 @@ if !errorlevel! equ 0 (
     goto :CREATE_VENV
 )
 
-:: 3. Check for uv toolchain
+:: 3. Check for bundled tools\uv.exe or system uv toolchain
 set "UV_EXEC="
-where uv >nul 2>&1
-if !errorlevel! equ 0 (
-    set "UV_EXEC=uv"
-) else if exist "%USERPROFILE%\.local\bin\uv.exe" (
-    set "UV_EXEC=%USERPROFILE%\.local\bin\uv.exe"
+if exist "%SCRIPT_DIR%tools\uv.exe" (
+    set "UV_EXEC=%SCRIPT_DIR%tools\uv.exe"
+) else (
+    where uv >nul 2>&1
+    if !errorlevel! equ 0 (
+        set "UV_EXEC=uv"
+    ) else if exist "%USERPROFILE%\.local\bin\uv.exe" (
+        set "UV_EXEC=%USERPROFILE%\.local\bin\uv.exe"
+    )
 )
 
 if defined UV_EXEC (
