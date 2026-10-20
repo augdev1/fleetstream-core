@@ -50,27 +50,29 @@ if !errorlevel! equ 0 (
 )
 
 if defined UV_EXEC (
-    echo [INFO] Using uv to configure isolated Python environment...
-    "%UV_EXEC%" venv "%VENV_DIR%"
+    echo [INFO] Using uv package manager to configure isolated Python environment...
+    echo [INFO] Provisioning standalone Python 3.12 runtime and virtual environment...
+    "%UV_EXEC%" venv "%VENV_DIR%" --python 3.12 --seed
     if !errorlevel! neq 0 (
-        echo [ERROR] uv failed to initialize virtual environment.
+        echo [ERROR] Failed to initialize virtual environment with uv.
         pause
         exit /b 1
     )
-    echo [INFO] Installing dependencies via uv...
+    echo [INFO] Installing required dependencies...
     "%UV_EXEC%" pip install -r "%SCRIPT_DIR%requirements.txt" --python "%VENV_PY%"
     if !errorlevel! equ 0 goto :SUCCESS
 )
 
 :: 4. Attempt automated 1-click bootstrap (zero manual Python setup required)
 echo [INFO] Python not found on system PATH.
-echo [INFO] Attempting automated 1-click setup...
+echo [INFO] Automatically downloading Python 3.12 and dependencies...
 powershell -ExecutionPolicy Bypass -Command "irm https://astral.sh/uv/install.ps1 | iex" >nul 2>&1
 if exist "%USERPROFILE%\.local\bin\uv.exe" (
     set "UV_EXEC=%USERPROFILE%\.local\bin\uv.exe"
-    echo [INFO] Automated bootstrapper configured.
-    echo [INFO] Provisioning isolated Python environment and dependencies...
-    "!UV_EXEC!" venv "%VENV_DIR%"
+    echo [INFO] Environment bootstrapper configured.
+    echo [INFO] Downloading standalone Python 3.12 and setting up .venv...
+    "!UV_EXEC!" venv "%VENV_DIR%" --python 3.12 --seed
+    echo [INFO] Installing required dependencies...
     "!UV_EXEC!" pip install -r "%SCRIPT_DIR%requirements.txt" --python "%VENV_PY%"
     if !errorlevel! equ 0 goto :SUCCESS
 )

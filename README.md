@@ -4,80 +4,41 @@ Local video file distribution and orchestration engine designed for mobile devic
 
 ---
 
+## Direct Download
+
+- **Ready-to-use Package (.ZIP):** [Download fleetstream-core.zip](https://github.com/augdev1/fleetstream-core/raw/main/fleetstream-core.zip)
+- **Source Code (.ZIP):** [Download GitHub Repository ZIP](https://github.com/augdev1/fleetstream-core/archive/refs/heads/main.zip)
+
+---
+
 ## Overview
 
-FleetStream eliminates local media management bottlenecks in automated multi-phone operations. It continuously monitors an incoming inbox folder, distributes video files across physical device targets (`iphone_01` through `iphone_04`) using a deterministic Round-Robin strategy, and automatically generates paired `.json` metadata sidecars containing viral captions, hashtags, timestamps, and SHA-256 integrity verification.
-
-Built under strict Test Harness Engineering principles, the repository includes a complete test bench simulating filesystem concurrency, file write stabilization, and fault injection without requiring physical hardware.
+FleetStream eliminates media orchestration bottlenecks in automated multi-phone social media operations. It continuously monitors an incoming inbox folder, safely waits for file copies to stabilize, distributes or mirrors videos to your iPhone directories (`iphone_01` through `iphone_04`), and automatically generates paired `.json` metadata sidecars containing viral captions, hashtags, timestamps, and SHA-256 integrity verification for Tame.so.
 
 ---
 
-## Quick Start (3 Steps for Windows)
+## Complete Step-by-Step Tutorial (Windows)
+
+No programming knowledge or command-line typing is required. The entire workflow operates through Windows Explorer and one-click batch scripts.
 
 ### Step 1: Unpack
-Extract the repository folder to your local drive (for example, `D:\fleetstream-core` or `C:\fleetstream-core`).
+1. Download **`fleetstream-core.zip`** using the download link above.
+2. Extract the folder anywhere on your computer (for example, `C:\FleetStream` or `D:\FleetStream`).
 
-### Step 2: Install Dependencies
-Double-click `INSTALL.bat` in the root folder.
-This script checks your Python installation (Python 3.11+ required) and installs the required runtime dependencies:
-```cmd
-INSTALL.bat
-```
+### Step 2: Run Installer (`INSTALL.bat`)
+1. Open the extracted folder and double-click **`INSTALL.bat`**.
+2. **Automatic Python Setup:** You do not need to install Python manually. If Python is missing from your PC, `INSTALL.bat` will automatically download and configure standalone Python 3.12 and all required dependencies in an isolated `.venv` environment.
+3. Once finished, the terminal will display `[SUCCESS] FleetStream environment ready!`. Press any key to close the window.
 
-### Step 3: Start the Orchestrator
-Double-click `START_FLEETSTREAM.bat`.
-This launches the continuous watcher daemon:
-```cmd
-START_FLEETSTREAM.bat
-```
-Any video dropped into the `inbox` directory will be automatically stabilized, distributed across your iPhones, and paired with a `.json` metadata sidecar.
+### Step 3: Test Installation (Optional)
+Double-click **`RUN_DEMO.bat`** to run a self-contained simulation. The script generates 8 test reels, processes them, and outputs a formatted terminal report confirming that video routing and `.json` sidecar generation are functional.
 
----
-
-## Architecture and Directory Structure
-
-```text
-fleetstream-core/
-|-- INSTALL.bat                 # Windows dependency installation script
-|-- START_FLEETSTREAM.bat       # Windows one-click watcher launcher
-|-- RUN_DEMO.bat               # Windows one-click simulation test
-|-- config.json                 # Path and device configuration file
-|-- requirements.txt            # Minimal runtime and testing dependencies
-|-- pyproject.toml              # Build metadata and tool configuration
-|-- run_demo.py                 # Self-contained operational demo script
-|-- watcher.py                  # Continuous background file watcher daemon
-|
-|-- core/                       # Core orchestration logic and schemas
-|   |-- __init__.py
-|   |-- config.py               # Pydantic configuration loader
-|   |-- distributor.py          # Round-Robin distribution engine
-|   |-- exceptions.py           # Domain exception classes
-|   |-- metadata.py             # Atomic sidecar JSON generator
-|   |-- models.py               # Pydantic data schemas
-|   |-- watcher.py              # Ingest orchestrator interface
-|
-|-- harness/                    # Test Harness Engineering toolkit
-|   |-- __init__.py
-|   |-- assertions.py           # Domain validation rules
-|   |-- env.py                  # Isolated sandbox environment manager
-|   |-- generators.py           # Synthetic video and corrupt file generator
-|   |-- test_distributor.py     # Hermetic test bench suite
-|
-`-- tests/                      # Unit and integration test suite
-    |-- __init__.py
-    |-- conftest.py             # Global pytest fixtures
-    |-- unit/                   # Model and unit tests
-    `-- integration/            # Pipeline and fault tolerance tests
-```
-
----
-
-## Configuration (`config.json`)
-
-To map FleetStream to your local Tame.so mount directories, modify `config.json` in the root folder:
+### Step 4: Configure Settings (`config.json`)
+Open **`config.json`** using Notepad to customize your setup:
 
 ```json
 {
+  "mode": "broadcast",
   "inbox_dir": "./inbox",
   "devices_dir": "./devices",
   "device_ids": [
@@ -85,6 +46,20 @@ To map FleetStream to your local Tame.so mount directories, modify `config.json`
     "iphone_02",
     "iphone_03",
     "iphone_04"
+  ],
+  "default_hashtags": [
+    "#viral",
+    "#fyp",
+    "#trending",
+    "#reels",
+    "#explore"
+  ],
+  "default_captions": [
+    "New exclusive drop. Link in bio.",
+    "Wait until the end. You will not believe this.",
+    "Daily viral clip. Follow for more.",
+    "Trending now. Check out the latest release.",
+    "Behind the scenes footage. Link in bio."
   ],
   "supported_extensions": [
     ".mp4",
@@ -96,6 +71,29 @@ To map FleetStream to your local Tame.so mount directories, modify `config.json`
   "poll_interval_seconds": 0.5
 }
 ```
+
+#### Configuration Options:
+- **`mode`**:
+  - `"broadcast"` (Default): Copies every incoming video to **all 4 iPhones** with individual `.json` sidecars in each phone folder.
+  - `"round_robin"`: Divides videos evenly among the 4 iPhones (e.g., 4 videos = 1 per phone).
+- **`default_hashtags`**: Array of hashtags attached to the `.json` sidecars for your niche.
+- **`default_captions`**: Pool of viral captions rotated across distributed videos.
+- **`inbox_dir`**: Folder where you drop new videos.
+- **`devices_dir`**: Folder containing your iPhone subdirectories (`iphone_01` to `iphone_04`). If you use custom Tame.so sync paths, set them here.
+
+### Step 5: Start the Service (`START_FLEETSTREAM.bat`)
+1. Double-click **`START_FLEETSTREAM.bat`**.
+2. Keep the black terminal window open (or minimized) in the background. It will show:
+   ```text
+   [READY] Monitoring active. Waiting for incoming videos...
+   ```
+3. Whenever you have videos to post, simply **drag and drop them into the `inbox` folder**.
+4. FleetStream will automatically:
+   - Detect each video and await copy stabilization.
+   - Deliver the files to your iPhone device folders (`devices/iphone_01/` through `iphone_04/`).
+   - Write paired `.json` sidecars with captions, hashtags, and SHA-256 checksums alongside each video.
+   - Clean the `inbox` folder so it remains ready for the next batch.
+5. Tame.so detects the files on each iPhone and handles the scheduled posting.
 
 ---
 
@@ -116,9 +114,9 @@ Each distributed video file (e.g., `clip_001.mp4`) generates an exact paired sid
     "#reels",
     "#explore"
   ],
-  "timestamp": "2026-10-19T22:48:08.362158Z",
-  "file_size_bytes": 10485760,
-  "checksum_sha256": "7957dac3839bef272e314fcd59b3abf5bd0a36403432803126aa2bdc9ae4cac6",
+  "timestamp": "2026-10-20T07:52:56.681939Z",
+  "file_size_bytes": 30087752,
+  "checksum_sha256": "54ae8b54b78c33fb8a8ccef927041c58cb97422e26d7151132ee396f255c1585",
   "status": "distributed",
   "extra_payload": {
     "managed_by": "tame.so",
@@ -142,24 +140,12 @@ Non-video extensions (such as `.txt`, `.pdf`, `.sh`) and temporary download file
 
 ---
 
-## Running the Automated Test Suite
+## Automated Test Suite
 
-To run all 22 tests across unit, integration, and harness suites:
+To run all 23 tests across unit, integration, and harness suites:
 
 ```bash
 pytest -v
-```
-
-To run only the isolated test harness:
-
-```bash
-pytest -v harness/
-```
-
-To run the interactive CLI demonstration with visual terminal output:
-
-```bash
-python run_demo.py
 ```
 
 ---
