@@ -76,12 +76,14 @@ Open **`config.json`** using Notepad to customize your setup if needed:
 - **`inbox_dir`**: Folder where you drop incoming videos.
 - **`devices_dir`**: Folder containing your iPhone subdirectories (`iphone_01` to `iphone_04`).
 
-### Step 4: Start the Service (`START_FLEETSTREAM.bat`)
-1. Double-click **`START_FLEETSTREAM.bat`**.
-2. Keep the window open (or minimized) in the background. It will show:
-   ```text
-   [READY] Monitoring active. Waiting for incoming videos...
-   ```
+### Step 4: Start the Service
+- **Windows:** Double-click **`START_FLEETSTREAM.bat`**.
+- **macOS:** Double-click **`START_FLEETSTREAM.command`** (or run `./start.sh` in Terminal).
+
+Keep the window open (or minimized) in the background. It will show:
+```text
+[READY] Monitoring active. Waiting for incoming videos...
+```
 3. Whenever you have videos to post, simply **drag and drop them into the `inbox` folder**.
 4. FleetStream will automatically:
    - Detect each video and await copy stabilization.

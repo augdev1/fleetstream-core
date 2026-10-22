@@ -11,14 +11,17 @@ and metadata generation for your 4 iPhones on Tame.so.
 
 1. RUN THE INSTALLER (ONE TIME ONLY):
    - Windows: Double-click "INSTALL.bat".
-   - macOS: Double-click "INSTALL.command".
+   - macOS: Double-click "INSTALL.command" (or run "./install.sh" in Terminal).
    This will automatically configure the isolated Python environment
    and install all required dependencies.
-   Wait until it displays "[SUCCESS] FleetStream environment ready!".
+   Wait until it displays "[SUCCESS] FleetStream is installed and ready on macOS!".
+
+   Tip for macOS: If macOS prompts with a security alert on first click,
+   right-click the file and choose "Open", or run "chmod +x *.command" in Terminal.
 
 2. START THE SERVICE:
    - Windows: Double-click "START_FLEETSTREAM.bat".
-   - macOS: Double-click "START_FLEETSTREAM.command".
+   - macOS: Double-click "START_FLEETSTREAM.command" (or run "./start.sh" in Terminal).
    Keep the window open or minimized in the background.
    The orchestrator is now actively monitoring for incoming videos.
 
